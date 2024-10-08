@@ -227,7 +227,7 @@ def send_mqtt_message(plate_number, plate_score, frigate_event_id, after_data, f
 def has_common_value(array1, array2):
     return any(value in array2 for value in array1)
 
-def save_image(config, after_data, frigate_url, frigate_event_id, plate_number):
+def save_image(config, after_data, frigate_url, frigate_event_id, plate_number, snapshot, event_count):
     if not config['frigate'].get('save_snapshots', False):
         _LOGGER.debug(f"Skipping saving snapshot because save_snapshots is set to false")
         return
@@ -236,17 +236,17 @@ def save_image(config, after_data, frigate_url, frigate_event_id, plate_number):
     event_url = f"{frigate_url}/api/events/{frigate_event_id}"
     
     final_attribute = get_final_data(event_url) 
-         
-    # get latest snapshot
-    snapshot = get_snapshot(frigate_event_id, frigate_url, False)
-    if not snapshot:
-        return
 
     image = Image.open(io.BytesIO(bytearray(snapshot)))
-    draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype("./Arial.ttf", size=14)
     
     if final_attribute:
+        # get latest snapshot
+        snapshot = get_snapshot(frigate_event_id, frigate_url, False)
+        if not snapshot:
+            return
+        image = Image.open(io.BytesIO(bytearray(snapshot)))
+        draw = ImageDraw.Draw(image)
+        font = ImageFont.truetype("./Arial.ttf", size=14)
         image_width, image_height = image.size
         dimension_1 = final_attribute[0]['box'][0]
         dimension_2 = final_attribute[0]['box'][1]
@@ -274,7 +274,7 @@ def save_image(config, after_data, frigate_url, frigate_event_id, plate_number):
 
     # save image
     timestamp = datetime.now().strftime(DATETIME_FORMAT)
-    image_name = f"{after_data['camera']}_{timestamp}.png"
+    image_name = f"{after_data['camera']}_{timestamp}_{event_count}.png"
     if plate_number:
         image_name = f"{str(plate_number).upper()}_{image_name}"
 
@@ -489,6 +489,8 @@ def on_message(client, userdata, message):
             frigate_url=frigate_url,
             frigate_event_id=frigate_event_id,
             plate_number=watched_plate if watched_plate else plate_number
+            snapshot=snapshot,
+            event_count=CURRENT_EVENTS[frigate_event_id]
         )
 
 def setup_db():
