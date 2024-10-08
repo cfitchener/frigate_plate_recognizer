@@ -316,12 +316,12 @@ def check_invalid_event(before_data, after_data):
     return False
 
 def get_snapshot(frigate_event_id, frigate_url, cropped):
-    _LOGGER.debug(f"Getting snapshot for event: {frigate_event_id}, Crop: {cropped}")
+    _LOGGER.debug(f"Getting snapshot for event: {frigate_event_id}, Crop: {int(cropped)}")
     snapshot_url = f"{frigate_url}/api/events/{frigate_event_id}/snapshot.jpg"
     _LOGGER.debug(f"event URL: {snapshot_url}")
 
     # get snapshot
-    response = requests.get(snapshot_url, params={ "crop": cropped, "quality": 95 })
+    response = requests.get(snapshot_url, params={ "crop": int(cropped), "quality": 95 })
 
     # Check if the request was successful (HTTP status code 200)
     if response.status_code != 200:
