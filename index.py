@@ -488,7 +488,7 @@ def on_message(client, userdata, message):
             after_data=after_data,
             frigate_url=frigate_url,
             frigate_event_id=frigate_event_id,
-            plate_number=watched_plate if watched_plate else plate_number
+            plate_number=watched_plate if watched_plate else plate_number,
             snapshot=snapshot,
             event_count=CURRENT_EVENTS[frigate_event_id]
         )
